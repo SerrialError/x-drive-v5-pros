@@ -4,6 +4,7 @@ const float pi = 3.1415926535897932384626433;
 float tmp;
 float strafe;
 float forwd;
+float robotheta;
 
 /**
  * A callback function for LLEMU's center button.
@@ -97,24 +98,25 @@ void opcontrol() {
 	}
     printf("IMU is done calibrating (took %d ms)\n", iter - time);
 	while (true) {
-		int robotheta = (imu_sensor.get_rotation() * (pi / 180));
+		robotheta = (imu_sensor.get_rotation() * (pi / 180));
    		tmp = (cos(robotheta) * (-1 * master.get_analog(ANALOG_LEFT_Y)) + sin(robotheta) * (-1 * master.get_analog(ANALOG_LEFT_X)));
-    	strafe = (sin(robotheta) * (-1 * master.get_analog(ANALOG_LEFT_Y)) + cos(robotheta) * (-1 * master.get_analog(ANALOG_LEFT_X)));
+    	strafe = (sin(robotheta) * (master.get_analog(ANALOG_LEFT_Y)) + cos(robotheta) * (-1 * master.get_analog(ANALOG_LEFT_X)));
 		forwd = tmp;
 
 		if (master.get_analog(ANALOG_RIGHT_X) != 0) {
-			leftfront.move(-1 * master.get_analog(ANALOG_RIGHT_X)); 
-			rightfront.move(master.get_analog(ANALOG_RIGHT_X)); 
-			rightback.move(master.get_analog(ANALOG_RIGHT_X)); 
-			leftback.move(-1 * master.get_analog(ANALOG_RIGHT_X)); 
+			leftfront.move(-0.5 * master.get_analog(ANALOG_RIGHT_X)); 
+			rightfront.move(0.5 * master.get_analog(ANALOG_RIGHT_X)); 
+			rightback.move(0.5 * master.get_analog(ANALOG_RIGHT_X)); 
+			leftback.move(-0.5 * master.get_analog(ANALOG_RIGHT_X)); 
 		}
 		else {
-			leftfront.move(forwd + strafe);	
-			rightfront.move(forwd - strafe);	
-			rightback.move(forwd + strafe);	
-			leftback.move(forwd - strafe);	
+			leftfront.move(0.5 * (forwd + strafe));	
+			rightfront.move((forwd - strafe) * 0.5);	
+			rightback.move(0.5 * (forwd + strafe));	
+			leftback.move((forwd - strafe) * 0.5);	
 		}
 		printf("rotation: %f radians\n", robotheta);
+		printf("rotation: %f degrees\n", imu_sensor.get_rotation());
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);  // Prints status of the emulated screen LCDs
